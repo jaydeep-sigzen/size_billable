@@ -1,7 +1,7 @@
 {
  "app": "size_billable",
  "charts": [],
- "content": "[{\"id\":\"header1\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Size Billable - Enhanced Billing & Timesheet Management</b></span>\",\"col\":12}},{\"id\":\"info1\",\"type\":\"text\",\"data\":{\"text\":\"<p>Welcome to Size Billable! This enhanced system provides comprehensive project management, timesheet tracking, and billing capabilities.</p>\",\"col\":12}},{\"id\":\"shortcuts1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Project\",\"col\":3}},{\"id\":\"shortcuts2\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Timesheet\",\"col\":3}},{\"id\":\"shortcuts3\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Task\",\"col\":3}},{\"id\":\"shortcuts4\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Timesheet Approval Report\",\"col\":3}}]",
+ "content": "[{\"id\": \"header1\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Size Billable - Enhanced Billing & Timesheet Management</b></span>\", \"col\": 12}}, {\"id\": \"info1\", \"type\": \"text\", \"data\": {\"text\": \"<p>Welcome to Size Billable! This enhanced system provides comprehensive project management, timesheet tracking, and billing capabilities.</p>\", \"col\": 12}}, {\"id\": \"shortcuts1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Project\", \"col\": 3}}, {\"id\": \"shortcuts2\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Timesheet\", \"col\": 3}}, {\"id\": \"shortcuts3\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Task\", \"col\": 3}}, {\"id\": \"shortcuts4\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Timesheet Approval Report\", \"col\": 3}}]",
  "creation": "2025-10-01 12:39:13.190900",
  "custom_blocks": [],
  "docstatus": 0,
@@ -54,7 +54,7 @@
    "type": "Link"
   }
  ],
- "modified": "2025-10-01 13:06:02.927527",
+ "modified": "2025-10-01 15:27:20.709007",
  "modified_by": "Administrator",
  "module": "Size Billable",
  "name": "Size Billable",

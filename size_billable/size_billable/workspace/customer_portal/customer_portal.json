@@ -1,7 +1,7 @@
 {
  "app": "size_billable",
  "charts": [],
- "content": "[{\"id\":\"header1\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Customer Portal Dashboard</b></span>\",\"col\":12}},{\"id\":\"info1\",\"type\":\"text\",\"data\":{\"text\":\"<p>Welcome to the Customer Portal. Here you can view your project status, billing information, and reports.</p>\",\"col\":12}},{\"id\":\"shortcuts1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Customer Portal\",\"col\":6}},{\"id\":\"shortcuts2\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Customer Billing Report\",\"col\":6}}]",
+ "content": "[{\"id\": \"header1\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Customer Portal Dashboard</b></span>\", \"col\": 12}}, {\"id\": \"info1\", \"type\": \"text\", \"data\": {\"text\": \"<p>Welcome to the Customer Portal. Here you can view your project status, billing information, and reports.</p>\", \"col\": 12}}, {\"id\": \"shortcuts1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Customer Portal\", \"col\": 6}}, {\"id\": \"shortcuts2\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Customer Billing Report\", \"col\": 6}}]",
  "creation": "2025-10-01 12:39:13.160678",
  "custom_blocks": [],
  "docstatus": 0,
@@ -14,7 +14,7 @@
  "label": "Customer Portal",
  "link_type": "DocType",
  "links": [],
- "modified": "2025-10-01 13:06:03.259161",
+ "modified": "2025-10-01 15:27:21.039717",
  "modified_by": "Administrator",
  "module": "Size Billable",
  "name": "Customer Portal",

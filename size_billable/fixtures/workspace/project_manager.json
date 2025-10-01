@@ -76,6 +76,17 @@
    "dependencies": "",
    "hidden": 0,
    "is_query_report": 1,
+   "label": "Manager Approval Report",
+   "link_count": 0,
+   "link_to": "Manager Approval Report",
+   "link_type": "Report",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 1,
    "label": "Project Summary Report",
    "link_count": 0,
    "link_to": "Project Summary Report",
@@ -126,6 +137,11 @@
   {
    "label": "Timesheet Approval Report",
    "link_to": "Timesheet Approval Report",
+   "type": "Report"
+  },
+  {
+   "label": "Manager Approval Report",
+   "link_to": "Manager Approval Report",
    "type": "Report"
   },
   {

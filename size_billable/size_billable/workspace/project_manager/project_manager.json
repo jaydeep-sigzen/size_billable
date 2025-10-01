@@ -1,7 +1,7 @@
 {
  "app": "size_billable",
  "charts": [],
- "content": "[{\"id\":\"header1\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Project Management Dashboard</b></span>\",\"col\":12}},{\"id\":\"shortcuts1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Project\",\"col\":3}},{\"id\":\"shortcuts2\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Timesheet\",\"col\":3}},{\"id\":\"shortcuts3\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Task\",\"col\":3}},{\"id\":\"shortcuts4\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Timesheet Approval Report\",\"col\":3}}]",
+ "content": "[{\"id\": \"header1\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Project Management Dashboard</b></span>\", \"col\": 12}}, {\"id\": \"shortcuts1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Project\", \"col\": 3}}, {\"id\": \"shortcuts2\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Timesheet\", \"col\": 3}}, {\"id\": \"shortcuts3\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Task\", \"col\": 3}}, {\"id\": \"shortcuts4\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Timesheet Approval Report\", \"col\": 3}}, {\"id\": \"shortcuts5\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Manager Approval Report\", \"col\": 3}}]",
  "creation": "2025-10-01 12:39:13.075966",
  "custom_blocks": [],
  "docstatus": 0,
@@ -54,7 +54,7 @@
    "type": "Link"
   }
  ],
- "modified": "2025-10-01 13:07:09.687731",
+ "modified": "2025-10-01 15:27:20.930905",
  "modified_by": "Administrator",
  "module": "Size Billable",
  "name": "Project Manager",

@@ -139,7 +139,8 @@ doc_events = {
 app_include_js = [
     "size_billable/public/js/project.js",
     "size_billable/public/js/timesheet.js",
-    "size_billable/public/js/timesheet_approval_report.js"
+    "size_billable/public/js/timesheet_approval_report.js",
+    "size_billable/public/js/manager_approval_report.js"
 ]
 
 # Installation
@@ -159,6 +160,13 @@ report_data = [
         "doctype": "Report", 
         "name": "Project Billing Summary",
         "report_name": "Project Billing Summary",
+        "module": "Size Billable",
+        "is_standard": "No"
+    },
+    {
+        "doctype": "Report",
+        "name": "Manager Approval Report",
+        "report_name": "Manager Approval Report",
         "module": "Size Billable",
         "is_standard": "No"
     }
