@@ -41,7 +41,7 @@ custom_fields = {
             "fieldname": "project_manager_user",
             "fieldtype": "Link",
             "options": "User",
-            "label": "Project Manager",
+            "label": "SB Project Manager",
             "reqd": 1,
             "insert_after": "customer",
             "description": "User responsible for managing this project and approving timesheets"
@@ -92,7 +92,7 @@ custom_fields = {
             "label": "Approved By",
             "read_only": 1,
             "insert_after": "approval_section",
-            "description": "Project Manager who approved this entry"
+            "description": "SB Project Manager who approved this entry"
         },
         {
             "fieldname": "approved_on",
@@ -141,6 +141,10 @@ app_include_js = [
     "size_billable/public/js/timesheet.js",
     "size_billable/public/js/timesheet_approval_report.js"
 ]
+
+# Installation
+after_install = "size_billable.setup.create_workspaces.create_workspaces"
+
 
 # Reports
 report_data = [

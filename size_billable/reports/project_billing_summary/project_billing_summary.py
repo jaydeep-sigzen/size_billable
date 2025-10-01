@@ -29,7 +29,7 @@ def get_columns():
         },
         {
             "fieldname": "project_manager", 
-            "label": "Project Manager", 
+            "label": "SB Project Manager", 
             "fieldtype": "Data", 
             "width": 120
         },

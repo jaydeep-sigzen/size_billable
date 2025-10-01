@@ -6,7 +6,7 @@ Enhanced billing and timesheet management for ERPNext with advanced project mana
 
 ### Project Management
 - **Fixed Cost vs Hourly Billing**: Support for both billing types with automatic hour tracking
-- **Project Manager Restrictions**: Only assigned project managers can create tasks for their projects
+- **SB Project Manager Restrictions**: Only assigned SB project managers can create tasks for their projects
 - **Hour Distribution**: Automatic calculation of billable vs non-billable hours
 - **Project Summary**: Real-time tracking of purchased, consumed, and remaining hours
 

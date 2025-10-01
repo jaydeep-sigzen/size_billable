@@ -7,10 +7,10 @@ def validate_project_manager(doc, method):
     if not doc.project_manager_user:
         frappe.throw(_("Project Manager is required"))
     
-    # Check if user has Project Manager role
+    # Check if user has SB Project Manager role
     user_roles = frappe.get_roles(doc.project_manager_user)
-    if "Project Manager" not in user_roles:
-        frappe.throw(_("Selected user must have Project Manager role"))
+    if "SB Project Manager" not in user_roles:
+        frappe.throw(_("Selected user must have SB Project Manager role"))
     
     # Validate billing type specific requirements
     if doc.billing_type == "Hourly Billing":

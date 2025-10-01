@@ -10,12 +10,12 @@ def validate_task_creation(doc, method):
     project_manager = frappe.get_value("Project", doc.project, "project_manager_user")
     
     if not project_manager:
-        frappe.throw(_("Project Manager not assigned to this project. Please contact administrator."))
+        frappe.throw(_("SB Project Manager not assigned to this project. Please contact administrator."))
     
     # Check if current user is the project manager
     if frappe.session.user != project_manager:
-        frappe.throw(_("Only the assigned Project Manager can create tasks for this project. "
-                      "Please contact the Project Manager: {0}").format(project_manager))
+        frappe.throw(_("Only the assigned SB Project Manager can create tasks for this project. "
+                      "Please contact the SB Project Manager: {0}").format(project_manager))
 
 @frappe.whitelist()
 def get_project_manager_tasks(project_name):

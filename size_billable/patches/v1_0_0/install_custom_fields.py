@@ -135,11 +135,11 @@ def execute():
                 **field
             }).insert()
     
-    # Create Project Manager role if it doesn't exist
-    if not frappe.db.exists("Role", "Project Manager"):
+    # Create SB Project Manager role if it doesn't exist
+    if not frappe.db.exists("Role", "SB Project Manager"):
         frappe.get_doc({
             "doctype": "Role",
-            "role_name": "Project Manager",
+            "role_name": "SB Project Manager",
             "desk_access": 1,
             "is_custom": 1
         }).insert()
@@ -159,8 +159,8 @@ def before_uninstall():
         frappe.delete_doc("Custom Field", field_name)
     
     # Remove custom role
-    if frappe.db.exists("Role", "Project Manager"):
-        frappe.delete_doc("Role", "Project Manager")
+    if frappe.db.exists("Role", "SB Project Manager"):
+        frappe.delete_doc("Role", "SB Project Manager")
     
     frappe.db.commit()
 
