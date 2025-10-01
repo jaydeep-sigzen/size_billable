@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Portal - Size Billable</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .summary-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .project-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .project-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .billing-badge {
+            font-size: 0.8em;
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+
+        .hourly-badge {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .fixed-badge {
+            background-color: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+        }
+
+        .error-message {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .filter-section {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .task-item {
+            background-color: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .activity-item {
+            background-color: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 5px 0;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            color: #007bff !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <!-- Navigation -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container">
+                <a class="navbar-brand" href="#">
+                    <i class="fas fa-chart-line me-2"></i>Customer Portal
+                </a>
+                <div class="navbar-nav ms-auto">
+                    <span class="navbar-text">
+                        <i class="fas fa-user me-1"></i>{{ customerName }}
+                    </span>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container mt-4">
+            <!-- Loading State -->
+            <div v-if="loading" class="loading">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Loading your billing data...</p>
+            </div>
+
+            <!-- Error State -->
+            <div v-if="error" class="error-message">
+                <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
+            </div>
+
+            <!-- Main Content -->
+            <div v-if="!loading && !error">
+                <!-- Summary Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="summary-card text-center">
+                            <h4>{{ totals.total_purchased_hours || 0 }}</h4>
+                            <small>Total Purchased Hours</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="summary-card text-center">
+                            <h4>{{ totals.total_consumed_hours || 0 }}</h4>
+                            <small>Total Consumed Hours</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="summary-card text-center">
+                            <h4>{{ totals.total_approved_hours || 0 }}</h4>
+                            <small>Approved Billable Hours</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="summary-card text-center">
+                            <h4>{{ totals.remaining_hours || 0 }}</h4>
+                            <small>Remaining Hours</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="filter-section">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label class="form-label">Project</label>
+                            <select v-model="selectedProject" @change="loadBillingData" class="form-select">
+                                <option value="">All Projects</option>
+                                <option v-for="project in projects" :key="project.name" :value="project.name">
+                                    {{ project.project_name }}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Month</label>
+                            <select v-model="selectedMonth" @change="loadBillingData" class="form-select">
+                                <option v-for="month in availableMonths" :key="month.value" :value="month.value">
+                                    {{ month.label }}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button @click="loadBillingData" class="btn btn-primary mt-4">
+                                <i class="fas fa-refresh me-1"></i>Refresh Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Billing Data -->
+                <div v-if="billingData && Object.keys(billingData).length > 0">
+                    <div v-for="(monthData, monthKey) in billingData" :key="monthKey">
+                        <h3 class="mb-3">
+                            <i class="fas fa-calendar-alt me-2"></i>{{ monthData.month }}
+                        </h3>
+
+                        <div v-for="(projectData, projectName) in monthData.projects" :key="projectName"
+                            class="project-card">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-project-diagram me-2"></i>{{ projectName }}
+                                    </h5>
+                                    <span :class="getBillingBadgeClass(projectData.billing_type)" class="billing-badge">
+                                        {{ projectData.billing_type }}
+                                    </span>
+                                </div>
+                                <div class="card-body">
+                                    <div v-if="projectData.hourly_rate" class="mb-3">
+                                        <strong>Hourly Rate:</strong> ${{ projectData.hourly_rate }}/hour
+                                    </div>
+
+                                    <div v-for="(taskData, taskName) in projectData.tasks" :key="taskName"
+                                        class="task-item">
+                                        <h6 class="mb-2">
+                                            <i class="fas fa-tasks me-2"></i>{{ taskName }}
+                                        </h6>
+
+                                        <div v-for="activity in taskData" :key="activity.name" class="activity-item">
+                                            <div class="row align-items-center">
+                                                <div class="col-md-3">
+                                                    <strong>{{ activity.activity_type }}</strong>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <i class="fas fa-user me-1"></i>{{ activity.employee_name }}
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <i class="fas fa-clock me-1"></i>{{ activity.billable_hours }}h
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <i class="fas fa-calendar me-1"></i>{{ activity.date }}
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-check-circle me-1"></i>Approved
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            <div v-if="activity.description" class="mt-2 text-muted">
+                                                <small>{{ activity.description }}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- No Data Message -->
+                <div v-else class="text-center py-5">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">No billing data available</h4>
+                    <p class="text-muted">No approved timesheet entries found for the selected period.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    loading: true,
+                    error: null,
+                    customerName: '',
+                    projects: [],
+                    billingData: {},
+                    availableMonths: [],
+                    selectedProject: '',
+                    selectedMonth: '',
+                    totals: {
+                        total_purchased_hours: 0,
+                        total_consumed_hours: 0,
+                        total_approved_hours: 0,
+                        remaining_hours: 0
+                    }
+                }
+            },
+            async mounted() {
+                await this.initializeData();
+            },
+            methods: {
+                async initializeData() {
+                    try {
+                        this.loading = true;
+                        this.error = null;
+
+                        // Load dashboard data
+                        const response = await this.callAPI('get_customer_dashboard_data');
+                        this.projects = response.projects;
+                        this.totals = response.totals;
+                        this.billingData = response.current_month_data;
+
+                        // Load available months
+                        this.availableMonths = await this.callAPI('get_available_months');
+
+                        // Set current month as default
+                        if (this.availableMonths.length > 0) {
+                            this.selectedMonth = this.availableMonths[0].value;
+                        }
+
+                        // Get customer name
+                        this.customerName = await this.getCustomerName();
+
+                    } catch (error) {
+                        this.error = error.message || 'Failed to load data';
+                        console.error('Error initializing data:', error);
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                async loadBillingData() {
+                    try {
+                        this.loading = true;
+                        this.error = null;
+
+                        const params = {};
+                        if (this.selectedProject) {
+                            params.project_name = this.selectedProject;
+                        }
+                        if (this.selectedMonth) {
+                            const [year, month] = this.selectedMonth.split('-');
+                            params.year = parseInt(year);
+                            params.month = parseInt(month);
+                        }
+
+                        this.billingData = await this.callAPI('get_billing_data', params);
+
+                    } catch (error) {
+                        this.error = error.message || 'Failed to load billing data';
+                        console.error('Error loading billing data:', error);
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                async callAPI(method, params = {}) {
+                    try {
+                        const response = await axios.post(`/api/method/size_billable.api.customer_portal.${method}`, params, {
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-Frappe-CSRF-Token': this.getCSRFToken()
+                            }
+                        });
+
+                        if (response.data && response.data.message) {
+                            return response.data.message;
+                        }
+                        return response.data;
+                    } catch (error) {
+                        if (error.response && error.response.data && error.response.data.exc_type) {
+                            throw new Error(error.response.data.exc_type);
+                        }
+                        throw error;
+                    }
+                },
+
+                getCSRFToken() {
+                    // Get CSRF token from meta tag or cookie
+                    const token = document.querySelector('meta[name="csrf-token"]');
+                    return token ? token.getAttribute('content') : '';
+                },
+
+                async getCustomerName() {
+                    try {
+                        const response = await axios.get('/api/method/frappe.auth.get_logged_user');
+                        return response.data.message || 'Customer';
+                    } catch (error) {
+                        return 'Customer';
+                    }
+                },
+
+                getBillingBadgeClass(billingType) {
+                    return billingType === 'Hourly Billing' ? 'hourly-badge' : 'fixed-badge';
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+
+</html>
