@@ -1,3 +1,25 @@
+"""
+Timesheet Management API
+
+This module handles timesheet-related functionality including billable hour calculations,
+approval workflows, and project hour tracking for the Size Billable app.
+
+Key Features:
+- Automatic billable/non-billable hour calculation and validation
+- Timesheet entry locking/unlocking during approval process
+- Project consumed hour tracking and updates
+- Manager timesheet approval status monitoring
+- Project-specific timesheet filtering for managers
+
+Security:
+- Only project managers can approve timesheets for their assigned projects
+- Timesheet entries are locked after submission until approval
+- All hour calculations are validated and logged
+
+The module integrates with the project management system to provide real-time
+hour consumption tracking and automated billing calculations.
+"""
+
 import frappe
 from frappe import _
 from frappe.utils import flt, now_datetime

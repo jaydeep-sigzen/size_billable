@@ -1,3 +1,25 @@
+"""
+Timesheet Approval Report
+
+This report provides a comprehensive view of timesheet entries requiring approval,
+with interactive functionality for SB Project Managers to manage timesheet approvals.
+
+Key Features:
+- Filter by project, employee, date range, and approval status
+- Display billable and non-billable hours for each entry
+- Interactive checkbox selection for bulk operations
+- Real-time data filtering and sorting
+- Integration with Manager Approval System
+
+Security:
+- Only accessible by users with SB Project Manager role
+- Project managers can only see entries for their assigned projects
+- All operations are validated and logged
+
+The report serves as the primary interface for timesheet approval workflows
+in the Size Billable system.
+"""
+
 import frappe
 from frappe import _
 from frappe.utils import flt, format_datetime

@@ -1,3 +1,24 @@
+"""
+Custom Fields Installation Patch - v1.0.0
+
+This patch installs all custom fields required for the Size Billable app,
+including fields for Project and Timesheet Detail DocTypes.
+
+Custom Fields Installed:
+- Project DocType: billing_type, total_purchased_hours, total_consumed_hours, 
+  project_manager_user, hourly_rate
+- Timesheet Detail DocType: billable_hours, non_billable_hours, is_approved
+
+Features:
+- Automatic field creation with proper validation
+- Role creation for SB Project Manager
+- Field dependency management
+- Error handling and rollback capabilities
+
+This patch is executed during app installation and ensures all required
+custom fields are properly installed in the ERPNext system.
+"""
+
 import frappe
 
 def execute():

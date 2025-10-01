@@ -1,3 +1,25 @@
+"""
+Manager Approval Report
+
+This report provides SB Project Managers with a comprehensive view of timesheet entries
+that require their approval, along with interactive functionality for bulk operations.
+
+Key Features:
+- Filter by project, employee, date range, and approval status
+- Display billable and non-billable hours for each entry
+- Interactive data grid with multi-select capability
+- Bulk approve/reject functionality
+- Dynamic hour adjustment with total preservation
+- Real-time data refresh and validation
+
+Security:
+- Only accessible by users with SB Project Manager role
+- Project managers can only see entries for their assigned projects
+- All operations are logged and auditable
+
+The report integrates with the Manager Approval System API for seamless workflow management.
+"""
+
 import frappe
 from frappe import _
 from frappe.utils import flt, getdate, today, add_days

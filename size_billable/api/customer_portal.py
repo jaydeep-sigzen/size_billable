@@ -1,3 +1,19 @@
+"""
+Customer Portal API Endpoints
+
+This module provides API endpoints for the customer portal functionality, allowing customers
+to view their project information, billing details, and reports through a secure web interface.
+
+Key Features:
+- Project listing and details for customers
+- Billing summary and detailed billing data
+- Dashboard data aggregation
+- Security validation for customer access
+- Month-wise billing breakdown
+
+All endpoints include proper security checks to ensure customers can only access their own data.
+"""
+
 import frappe
 from frappe import _
 from frappe.utils import flt, getdate, add_months, format_datetime

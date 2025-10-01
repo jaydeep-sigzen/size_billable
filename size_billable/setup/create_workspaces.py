@@ -1,3 +1,25 @@
+"""
+Workspace Creation Script
+
+This script programmatically creates and configures Frappe workspaces for the Size Billable app.
+It sets up role-based workspaces with appropriate content, shortcuts, and links for different user types.
+
+Workspaces Created:
+- Size Billable: Main workspace with general project management tools
+- Project Manager: SB Project Manager workspace with approval tools and reports
+- Project User: Developer workspace with timesheet and task management
+- Customer Portal: Customer-facing workspace with billing and project information
+
+Features:
+- Safe workspace creation with error handling
+- Role-based access control
+- Dynamic content generation
+- Link validation and cleanup
+- Timestamp conflict resolution
+
+This script is called during app installation via the after_install hook.
+"""
+
 import frappe
 
 def create_workspaces():

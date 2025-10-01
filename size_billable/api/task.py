@@ -1,3 +1,18 @@
+"""
+Task Management API
+
+This module handles task creation validation and project manager task management functionality.
+
+Key Features:
+- Task creation restriction to project managers only
+- Project manager task listing and management
+- Project filtering for managers
+- Security validation for task operations
+
+The module ensures that only assigned project managers can create and manage tasks
+for their respective projects, maintaining proper project governance.
+"""
+
 import frappe
 from frappe import _
 

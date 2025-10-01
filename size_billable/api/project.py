@@ -1,3 +1,26 @@
+"""
+Project Management API
+
+This module handles project-related functionality including validation, billing calculations,
+and timesheet approval workflows for the Size Billable app.
+
+Key Features:
+- Project manager validation and role checking
+- Billing type validation (Fixed Cost vs Hourly Billing)
+- Automatic hour consumption tracking
+- Project billing summary generation
+- Bulk timesheet approval/rejection
+- Budget monitoring and alerts
+
+Security:
+- Only SB Project Managers can manage projects
+- Project managers can only approve entries for their assigned projects
+- All operations include proper validation and error handling
+
+The module integrates with the timesheet system to provide real-time billing insights
+and automated workflow management.
+"""
+
 import frappe
 from frappe import _
 from frappe.utils import flt, now_datetime

@@ -1,3 +1,22 @@
+"""
+Timesheet Approval API
+
+This module provides the core functionality for the Manager Approval System, allowing
+SB Project Managers to approve, reject, and modify timesheet entries for their projects.
+
+Key Features:
+- Bulk approval and rejection of timesheet entries
+- Dynamic hour adjustment (billable/non-billable) with total preservation
+- Project manager authorization validation
+- Timesheet status management
+- Audit trail for approval actions
+
+Security:
+- Only SB Project Managers can access these functions
+- Project managers can only approve entries for their assigned projects
+- All actions are logged with timestamps and user information
+"""
+
 import frappe
 from frappe import _
 from frappe.utils import now, get_datetime

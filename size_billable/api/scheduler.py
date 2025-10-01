@@ -1,3 +1,25 @@
+"""
+Scheduler and Background Tasks API
+
+This module handles scheduled tasks and background operations for the Size Billable app,
+including automated hour calculations, billing report generation, and system health monitoring.
+
+Key Features:
+- Daily project hour consumption updates
+- Weekly billing report generation
+- System health monitoring and metrics
+- Automated project budget tracking
+- Background data synchronization
+
+Scheduled Tasks:
+- Daily: Update project consumed hours from approved timesheets
+- Weekly: Generate customer billing reports
+- On-demand: System health checks and metrics
+
+The module ensures data consistency and provides automated maintenance
+for the Size Billable system without manual intervention.
+"""
+
 import frappe
 from frappe.utils import now_datetime, add_days
 from frappe import _

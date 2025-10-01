@@ -1,3 +1,24 @@
+/**
+ * Manager Approval Report - Interactive Client Script
+ * 
+ * This script provides interactive functionality for the Manager Approval Report,
+ * enabling SB Project Managers to efficiently manage timesheet approvals through
+ * a user-friendly interface with bulk operations and dynamic hour adjustments.
+ * 
+ * Key Features:
+ * - Multi-select functionality for bulk operations
+ * - Dynamic hour adjustment with total preservation
+ * - Real-time validation and feedback
+ * - Bulk approve/reject operations
+ * - Save changes functionality
+ * - Data refresh capabilities
+ * 
+ * Security:
+ * - Project filtering restricted to manager's assigned projects
+ * - Employee filtering limited to active employees
+ * - All operations validated server-side
+ */
+
 frappe.query_reports["Manager Approval Report"] = {
     "filters": [
         {

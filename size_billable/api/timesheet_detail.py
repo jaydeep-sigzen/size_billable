@@ -1,3 +1,25 @@
+"""
+Timesheet Detail Management API
+
+This module handles individual timesheet detail entries, providing validation,
+hour distribution management, and bulk operations for the Size Billable app.
+
+Key Features:
+- Hour distribution validation (billable + non-billable = total)
+- Automatic non-billable hour calculation
+- Approval status management
+- Individual and bulk hour updates
+- Project manager authorization validation
+
+Security:
+- Only project managers can modify timesheet details for their projects
+- All hour calculations are validated and logged
+- Approval status changes are tracked and auditable
+
+The module ensures data integrity in timesheet entries and provides
+flexible hour management capabilities for project managers.
+"""
+
 import frappe
 from frappe import _
 from frappe.utils import flt

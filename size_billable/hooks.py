@@ -1,5 +1,20 @@
+"""
+Size Billable App Configuration and Hooks
+
+This file contains the main configuration for the Size Billable app including:
+- App metadata and branding
+- Custom field definitions for Project and Timesheet Detail DocTypes
+- DocType event handlers for validation and automation
+- Client-side script inclusions for enhanced UI functionality
+- Workspace creation and fixture management
+- Report registration and configuration
+
+The hooks system allows the app to integrate seamlessly with ERPNext's core functionality.
+"""
+
 from . import __version__
 
+# App metadata and branding configuration
 app_name = "size_billable"
 app_title = "Size Billable"
 app_publisher = "Your Company"

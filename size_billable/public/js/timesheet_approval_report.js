@@ -1,4 +1,25 @@
-// Enhanced Timesheet Approval Report with interactive features
+/**
+ * Timesheet Approval Report - Interactive Client Script
+ * 
+ * This script enhances the Timesheet Approval Report with interactive functionality,
+ * enabling SB Project Managers to efficiently manage timesheet approvals through
+ * bulk operations and dynamic hour adjustments.
+ * 
+ * Key Features:
+ * - Bulk approve/reject operations with multi-select
+ * - Dynamic hour editing with real-time validation
+ * - Save changes functionality for hour modifications
+ * - Data refresh capabilities
+ * - Interactive UI with action buttons
+ * - Real-time hour calculation and validation
+ * 
+ * Security:
+ * - All operations validated server-side
+ * - Project manager authorization checked
+ * - Hour distribution validation enforced
+ * - Audit trail maintained for all changes
+ */
+
 frappe.query_reports["Timesheet Approval Report"] = {
     onload: function (report) {
         // Add custom buttons to the report

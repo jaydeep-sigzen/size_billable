@@ -1,3 +1,24 @@
+"""
+Desktop Configuration for Size Billable App
+
+This module configures the desktop shortcuts and navigation items for the Size Billable app,
+providing easy access to key reports and pages for different user roles.
+
+Desktop Items:
+- Timesheet Approval Report: Primary tool for SB Project Managers
+- Project Billing Summary: Billing overview and monitoring
+- Customer Portal: Customer-facing dashboard
+
+Features:
+- Role-based visibility (handled by Frappe's permission system)
+- Onboarding integration for new users
+- Icon and description configuration
+- Organized under Size Billable section
+
+The configuration ensures that users have quick access to the most
+important features of the Size Billable system from the desktop.
+"""
+
 from frappe import _
 
 def get_data():

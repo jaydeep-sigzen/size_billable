@@ -1,3 +1,26 @@
+"""
+Project Billing Summary Report
+
+This report provides comprehensive billing information for projects, including
+hour consumption, billing amounts, and project status for SB Project Managers.
+
+Key Features:
+- Project billing overview with hour tracking
+- Customer and billing type information
+- Hour consumption vs purchased hours comparison
+- Billing amount calculations
+- Project manager assignment details
+- Budget monitoring and alerts
+
+Security:
+- Only accessible by users with SB Project Manager role
+- Project managers can only see their assigned projects
+- All financial data is properly formatted and validated
+
+The report provides essential insights for project managers to monitor
+project budgets and billing status in real-time.
+"""
+
 import frappe
 from frappe import _
 from frappe.utils import flt, format_currency
