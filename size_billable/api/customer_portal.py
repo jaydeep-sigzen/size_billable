@@ -22,12 +22,20 @@ import calendar
 
 @frappe.whitelist()
 def get_customer_projects(customer_name=None):
-    """Get projects for the current customer user"""
+    """
+    Get projects for the current customer user
+    
+    Security Rules:
+    - Only users with "Customer" role can access
+    - Customers can only see their own projects
+    - Only approved billable hours are visible (approved_by field is not null)
+    - September 2025 view: Shows only data approved through August 2025
+    """
     user = frappe.session.user
     
     # Validate customer role
-    if not frappe.has_permission("Customer", "read", user):
-        frappe.throw(_("You don't have permission to access customer data"))
+    if "Customer" not in frappe.get_roles(user):
+        frappe.throw(_("Access denied. Only customers can access this portal."))
     
     # Get customer from user
     if not customer_name:
@@ -46,8 +54,21 @@ def get_customer_projects(customer_name=None):
 
 @frappe.whitelist()
 def get_project_summary(project_name):
-    """Get summary cards data for a project"""
+    """
+    Get summary cards data for a project
+    
+    Returns data in the format required for summary cards:
+    [Project Name]                    [Billing Type Badge]
+    Total Purchased Hours:            1000
+    Total Consumed Hours:             750
+    Total Billable Hours (Approved):  600
+    Remaining Hours:                  250
+    """
     user = frappe.session.user
+    
+    # Validate customer role
+    if "Customer" not in frappe.get_roles(user):
+        frappe.throw(_("Access denied. Only customers can access this portal."))
     
     # Validate access to project
     project = frappe.get_doc("Project", project_name)
@@ -63,6 +84,7 @@ def get_project_summary(project_name):
         consumption_percentage = (project.total_consumed_hours / project.total_purchased_hours) * 100
     
     # Get approved billable hours (only approved entries are visible to customers)
+    # September 2025 view: Shows only data approved through August 2025
     approved_billable_hours = frappe.db.sql("""
         SELECT SUM(tsd.billable_hours)
         FROM `tabTimesheet Detail` tsd
@@ -70,6 +92,7 @@ def get_project_summary(project_name):
         WHERE tsd.project = %s
         AND tsd.approved_by IS NOT NULL
         AND ts.status = 'Submitted'
+        AND tsd.approved_on <= '2025-08-31 23:59:59'
     """, project_name)[0][0] or 0
     
     return {
@@ -81,13 +104,34 @@ def get_project_summary(project_name):
         "remaining_hours": remaining_hours,
         "consumption_percentage": consumption_percentage,
         "hourly_rate": project.hourly_rate,
-        "total_billable_amount": approved_billable_hours * (project.hourly_rate or 0)
+        "total_billable_amount": approved_billable_hours * (project.hourly_rate or 0),
+        "status": project.status
     }
 
 @frappe.whitelist()
-def get_billing_data(project_name=None, month=None, year=None):
-    """Get detailed billing data for customer portal with month-based filtering"""
+def get_billing_data(project_name=None, month=None, year=None, employee=None, activity_type=None):
+    """
+    Get detailed billing data for customer portal with hierarchical structure
+    
+    Hierarchical Data Structure:
+    📅 September 2024
+      📁 Project: Website Redesign
+        📋 Task: Frontend Development
+          - Activity: Development | Employee: John Doe | 8 hours
+          - Activity: Testing | Employee: Jane Smith | 4 hours
+        📋 Task: Backend API
+          - Activity: Development | Employee: Mike Johnson | 6 hours
+    
+    Security Rules:
+    - Only approved billable hours are visible (approved_by field is not null)
+    - September 2025 view: Shows only data approved through August 2025
+    - No pending/unapproved entries visible to customers
+    """
     user = frappe.session.user
+    
+    # Validate customer role
+    if "Customer" not in frappe.get_roles(user):
+        frappe.throw(_("Access denied. Only customers can access this portal."))
     
     # Validate customer access
     customer_name = frappe.get_value("User", user, "customer")
@@ -124,8 +168,23 @@ def get_billing_data(project_name=None, month=None, year=None):
     else:
         end_date = datetime(year, month + 1, 1) - timedelta(days=1)
     
+    # Build additional filters
+    additional_filters = []
+    filter_params = [project_filter, start_date, end_date]
+    
+    if employee:
+        additional_filters.append("AND ts.employee_name LIKE %s")
+        filter_params.append(f"%{employee}%")
+    
+    if activity_type:
+        additional_filters.append("AND tsd.activity_type LIKE %s")
+        filter_params.append(f"%{activity_type}%")
+    
+    filter_clause = " ".join(additional_filters)
+    
     # Get approved timesheet data (only approved entries are visible to customers)
-    billing_data = frappe.db.sql("""
+    # September 2025 view: Shows only data approved through August 2025
+    billing_data = frappe.db.sql(f"""
         SELECT 
             tsd.name,
             tsd.project,
@@ -147,10 +206,12 @@ def get_billing_data(project_name=None, month=None, year=None):
         WHERE tsd.project = %s
         AND ts.status = 'Submitted'
         AND tsd.approved_by IS NOT NULL
+        AND tsd.approved_on <= '2025-08-31 23:59:59'
         AND ts.start_date >= %s
         AND ts.start_date <= %s
+        {filter_clause}
         ORDER BY ts.start_date DESC, p.project_name, tsd.task
-    """, (project_filter, start_date, end_date), as_dict=True)
+    """, filter_params, as_dict=True)
     
     # Group data by month and project
     result = {}
@@ -225,12 +286,17 @@ def get_customer_dashboard_data():
 def get_available_months():
     """Get list of available months with approved data for customer"""
     user = frappe.session.user
-    customer_name = frappe.get_value("User", user, "customer")
     
+    # Validate customer role
+    if "Customer" not in frappe.get_roles(user):
+        frappe.throw(_("Access denied. Only customers can access this portal."))
+    
+    customer_name = frappe.get_value("User", user, "customer")
     if not customer_name:
         return []
     
     # Get months with approved timesheet data
+    # September 2025 view: Shows only data approved through August 2025
     months = frappe.db.sql("""
         SELECT DISTINCT 
             YEAR(ts.start_date) as year,
@@ -241,6 +307,7 @@ def get_available_months():
         WHERE p.customer = %s
         AND ts.status = 'Submitted'
         AND tsd.approved_by IS NOT NULL
+        AND tsd.approved_on <= '2025-08-31 23:59:59'
         ORDER BY year DESC, month DESC
     """, customer_name, as_dict=True)
     
@@ -255,3 +322,80 @@ def get_available_months():
         })
     
     return result
+
+@frappe.whitelist()
+def get_available_employees():
+    """Get list of employees who have worked on customer projects"""
+    user = frappe.session.user
+    
+    # Validate customer role
+    if "Customer" not in frappe.get_roles(user):
+        frappe.throw(_("Access denied. Only customers can access this portal."))
+    
+    customer_name = frappe.get_value("User", user, "customer")
+    if not customer_name:
+        return []
+    
+    # Get employees with approved timesheet data
+    employees = frappe.db.sql("""
+        SELECT DISTINCT ts.employee_name
+        FROM `tabTimesheet Detail` tsd
+        INNER JOIN `tabTimesheet` ts ON tsd.parent = ts.name
+        INNER JOIN `tabProject` p ON tsd.project = p.name
+        WHERE p.customer = %s
+        AND ts.status = 'Submitted'
+        AND tsd.approved_by IS NOT NULL
+        AND tsd.approved_on <= '2025-08-31 23:59:59'
+        ORDER BY ts.employee_name
+    """, customer_name, as_dict=True)
+    
+    return [emp.employee_name for emp in employees if emp.employee_name]
+
+@frappe.whitelist()
+def get_available_activity_types():
+    """Get list of activity types used in customer projects"""
+    user = frappe.session.user
+    
+    # Validate customer role
+    if "Customer" not in frappe.get_roles(user):
+        frappe.throw(_("Access denied. Only customers can access this portal."))
+    
+    customer_name = frappe.get_value("User", user, "customer")
+    if not customer_name:
+        return []
+    
+    # Get activity types with approved timesheet data
+    activity_types = frappe.db.sql("""
+        SELECT DISTINCT tsd.activity_type
+        FROM `tabTimesheet Detail` tsd
+        INNER JOIN `tabTimesheet` ts ON tsd.parent = ts.name
+        INNER JOIN `tabProject` p ON tsd.project = p.name
+        WHERE p.customer = %s
+        AND ts.status = 'Submitted'
+        AND tsd.approved_by IS NOT NULL
+        AND tsd.approved_on <= '2025-08-31 23:59:59'
+        ORDER BY tsd.activity_type
+    """, customer_name, as_dict=True)
+    
+    return [act.activity_type for act in activity_types if act.activity_type]
+
+@frappe.whitelist()
+def get_customer_projects_for_filter():
+    """Get customer projects for filter dropdown"""
+    user = frappe.session.user
+    
+    # Validate customer role
+    if "Customer" not in frappe.get_roles(user):
+        frappe.throw(_("Access denied. Only customers can access this portal."))
+    
+    customer_name = frappe.get_value("User", user, "customer")
+    if not customer_name:
+        return []
+    
+    # Get projects for this customer
+    projects = frappe.get_all("Project", 
+        filters={"customer": customer_name, "status": ["!=", "Cancelled"]},
+        fields=["name", "project_name"]
+    )
+    
+    return [{"name": p.name, "project_name": p.project_name} for p in projects]

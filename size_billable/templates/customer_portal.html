@@ -113,6 +113,94 @@
             font-weight: bold;
             color: #007bff !important;
         }
+
+        /* Project Summary Card Styles */
+        .project-summary-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .project-summary-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .project-summary-card .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+        }
+
+        .summary-row .label {
+            font-weight: 500;
+            color: #666;
+        }
+
+        .summary-row .value {
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* Overall Summary Card Styles */
+        .overall-summary-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        .overall-summary-card .card-header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .summary-item {
+            text-align: center;
+            padding: 15px;
+        }
+
+        .summary-item h6 {
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .summary-item h3 {
+            color: #333;
+            font-weight: bold;
+        }
+
+        /* Billing Badge Styles */
+        .billing-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .hourly-badge {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .fixed-badge {
+            background-color: #f3e5f5;
+            color: #7b1fa2;
+        }
     </style>
 </head>
 
@@ -148,58 +236,145 @@
 
             <!-- Main Content -->
             <div v-if="!loading && !error">
-                <!-- Summary Cards -->
+                <!-- Summary Cards Section (Top) -->
                 <div class="row mb-4">
-                    <div class="col-md-3">
-                        <div class="summary-card text-center">
-                            <h4>{{ totals.total_purchased_hours || 0 }}</h4>
-                            <small>Total Purchased Hours</small>
+                    <div class="col-12">
+                        <h3 class="mb-3">
+                            <i class="fas fa-chart-line me-2"></i>Project Summary Cards
+                        </h3>
+                    </div>
+                    
+                    <!-- Individual Project Summary Cards -->
+                    <div v-for="project in projects" :key="project.name" class="col-md-6 col-lg-4 mb-3">
+                        <div class="project-summary-card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">{{ project.project_name }}</h5>
+                                <span :class="getBillingBadgeClass(project.billing_type)" class="billing-badge">
+                                    {{ project.billing_type }}
+                                </span>
+                            </div>
+                            <div class="card-body">
+                                <div class="summary-row">
+                                    <span class="label">Total Purchased Hours:</span>
+                                    <span class="value">{{ project.total_purchased_hours || 0 }}</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span class="label">Total Consumed Hours:</span>
+                                    <span class="value">{{ project.total_consumed_hours || 0 }}</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span class="label">Total Billable Hours (Approved):</span>
+                                    <span class="value">{{ getProjectApprovedHours(project.name) }}</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span class="label">Remaining Hours:</span>
+                                    <span class="value">{{ (project.total_purchased_hours || 0) - (project.total_consumed_hours || 0) }}</span>
+                                </div>
+                                <div v-if="project.hourly_rate" class="summary-row">
+                                    <span class="label">Hourly Rate:</span>
+                                    <span class="value">${{ project.hourly_rate }}/hour</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="summary-card text-center">
-                            <h4>{{ totals.total_consumed_hours || 0 }}</h4>
-                            <small>Total Consumed Hours</small>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="summary-card text-center">
-                            <h4>{{ totals.total_approved_hours || 0 }}</h4>
-                            <small>Approved Billable Hours</small>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="summary-card text-center">
-                            <h4>{{ totals.remaining_hours || 0 }}</h4>
-                            <small>Remaining Hours</small>
+                    
+                    <!-- Overall Totals Card -->
+                    <div class="col-12">
+                        <div class="overall-summary-card">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-chart-pie me-2"></i>Overall Summary
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="summary-item">
+                                            <h6>Total Purchased Hours</h6>
+                                            <h3>{{ totals.total_purchased_hours }}</h3>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="summary-item">
+                                            <h6>Total Consumed Hours</h6>
+                                            <h3>{{ totals.total_consumed_hours }}</h3>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="summary-item">
+                                            <h6>Approved Hours</h6>
+                                            <h3>{{ totals.total_approved_hours }}</h3>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="summary-item">
+                                            <h6>Remaining Hours</h6>
+                                            <h3>{{ totals.remaining_hours }}</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Filters -->
+                <!-- Enhanced Filtering & Search -->
                 <div class="filter-section">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <label class="form-label">Project</label>
-                            <select v-model="selectedProject" @change="loadBillingData" class="form-select">
-                                <option value="">All Projects</option>
-                                <option v-for="project in projects" :key="project.name" :value="project.name">
-                                    {{ project.project_name }}
-                                </option>
-                            </select>
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-filter me-2"></i>Filter & Search Options
+                            </h5>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Month</label>
-                            <select v-model="selectedMonth" @change="loadBillingData" class="form-select">
-                                <option v-for="month in availableMonths" :key="month.value" :value="month.value">
-                                    {{ month.label }}
-                                </option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <button @click="loadBillingData" class="btn btn-primary mt-4">
-                                <i class="fas fa-refresh me-1"></i>Refresh Data
-                            </button>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <label class="form-label">Month/Year</label>
+                                    <select v-model="selectedMonth" @change="loadBillingData" class="form-select">
+                                        <option value="">All Months</option>
+                                        <option v-for="month in availableMonths" :key="month.value" :value="month.value">
+                                            {{ month.label }}
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Project</label>
+                                    <select v-model="selectedProject" @change="loadBillingData" class="form-select">
+                                        <option value="">All Projects</option>
+                                        <option v-for="project in projects" :key="project.name" :value="project.name">
+                                            {{ project.project_name }}
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Employee</label>
+                                    <select v-model="selectedEmployee" @change="loadBillingData" class="form-select">
+                                        <option value="">All Employees</option>
+                                        <option v-for="employee in availableEmployees" :key="employee" :value="employee">
+                                            {{ employee }}
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Activity Type</label>
+                                    <select v-model="selectedActivityType" @change="loadBillingData" class="form-select">
+                                        <option value="">All Activity Types</option>
+                                        <option v-for="activity in availableActivityTypes" :key="activity" :value="activity">
+                                            {{ activity }}
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <button @click="loadBillingData" class="btn btn-primary me-2">
+                                        <i class="fas fa-refresh me-1"></i>Refresh Data
+                                    </button>
+                                    <button @click="clearFilters" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-1"></i>Clear Filters
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -286,8 +461,13 @@
                     projects: [],
                     billingData: {},
                     availableMonths: [],
+                    availableEmployees: [],
+                    availableActivityTypes: [],
                     selectedProject: '',
                     selectedMonth: '',
+                    selectedEmployee: '',
+                    selectedActivityType: '',
+                    projectSummaries: {},
                     totals: {
                         total_purchased_hours: 0,
                         total_consumed_hours: 0,
@@ -313,6 +493,15 @@
 
                         // Load available months
                         this.availableMonths = await this.callAPI('get_available_months');
+
+                        // Load available employees
+                        this.availableEmployees = await this.callAPI('get_available_employees');
+
+                        // Load available activity types
+                        this.availableActivityTypes = await this.callAPI('get_available_activity_types');
+
+                        // Load project summaries
+                        await this.loadProjectSummaries();
 
                         // Set current month as default
                         if (this.availableMonths.length > 0) {
@@ -344,6 +533,12 @@
                             params.year = parseInt(year);
                             params.month = parseInt(month);
                         }
+                        if (this.selectedEmployee) {
+                            params.employee = this.selectedEmployee;
+                        }
+                        if (this.selectedActivityType) {
+                            params.activity_type = this.selectedActivityType;
+                        }
 
                         this.billingData = await this.callAPI('get_billing_data', params);
 
@@ -353,6 +548,31 @@
                     } finally {
                         this.loading = false;
                     }
+                },
+
+                async loadProjectSummaries() {
+                    // Load summary data for each project
+                    for (const project of this.projects) {
+                        try {
+                            const summary = await this.callAPI('get_project_summary', { project_name: project.name });
+                            this.projectSummaries[project.name] = summary;
+                        } catch (error) {
+                            console.error(`Error loading summary for project ${project.name}:`, error);
+                        }
+                    }
+                },
+
+                clearFilters() {
+                    this.selectedProject = '';
+                    this.selectedMonth = this.availableMonths.length > 0 ? this.availableMonths[0].value : '';
+                    this.selectedEmployee = '';
+                    this.selectedActivityType = '';
+                    this.loadBillingData();
+                },
+
+                getProjectApprovedHours(projectName) {
+                    const summary = this.projectSummaries[projectName];
+                    return summary ? summary.approved_billable_hours : 0;
                 },
 
                 async callAPI(method, params = {}) {

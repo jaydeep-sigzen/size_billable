@@ -146,3 +146,6 @@ function format_currency(amount) {
     }).format(amount);
 }
 
+
+
+

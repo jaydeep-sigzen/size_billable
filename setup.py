@@ -10,11 +10,14 @@ setup(
 	name="size_billable",
 	version=version,
 	description="Enhanced billing and timesheet management for ERPNext",
-	author="Your Company",
-	author_email="support@yourcompany.com",
+	author="Jaydeep patoliya",
+	author_email="jaydeep@sigzen.com",
 	packages=find_packages(),
 	zip_safe=False,
 	include_package_data=True,
 	install_requires=install_requires
 )
+
+
+
 
