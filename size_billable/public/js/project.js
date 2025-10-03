@@ -44,6 +44,10 @@ frappe.ui.form.on("Project", {
     }
 });
 
+// Cache for project data to avoid repeated API calls
+const projectDataCache = new Map();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 function show_hour_consumption_chart(project) {
     const dialog = new frappe.ui.Dialog({
         title: __("Hour Consumption Chart"),
@@ -58,74 +62,105 @@ function show_hour_consumption_chart(project) {
 
     dialog.show();
 
-    // Load chart data
+    // Check cache first
+    const cacheKey = `project_summary_${project.name}`;
+    const cachedData = projectDataCache.get(cacheKey);
+
+    if (cachedData && (Date.now() - cachedData.timestamp) < CACHE_TTL) {
+        renderChartData(cachedData.data, dialog);
+        return;
+    }
+
+    // Show loading indicator
+    const chartContainer = dialog.fields_dict.chart_container.$wrapper;
+    chartContainer.html('<div class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading...</div>');
+
+    // Load chart data with error handling
     frappe.call({
         method: "size_billable.api.project.get_project_billing_summary",
         args: { "project_name": project.name },
         callback: function (r) {
             if (r.message) {
-                const data = r.message;
-                const chartContainer = dialog.fields_dict.chart_container.$wrapper;
+                // Cache the data
+                projectDataCache.set(cacheKey, {
+                    data: r.message,
+                    timestamp: Date.now()
+                });
 
-                chartContainer.html(`
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h6>Hour Consumption Progress</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div class="progress mb-3" style="height: 30px;">
-                                        <div class="progress-bar ${getProgressBarClass(data.consumption_percentage)}" 
-                                             style="width: ${data.consumption_percentage}%">
-                                            ${data.total_consumed_hours} / ${data.total_purchased_hours} hours
-                                        </div>
-                                    </div>
-                                    <div class="row text-center">
-                                        <div class="col-4">
-                                            <h4 class="text-primary">${data.total_purchased_hours}</h4>
-                                            <small class="text-muted">Purchased</small>
-                                        </div>
-                                        <div class="col-4">
-                                            <h4 class="text-success">${data.total_consumed_hours}</h4>
-                                            <small class="text-muted">Consumed</small>
-                                        </div>
-                                        <div class="col-4">
-                                            <h4 class="text-info">${data.remaining_hours}</h4>
-                                            <small class="text-muted">Remaining</small>
-                                        </div>
-                                    </div>
-                                </div>
+                renderChartData(r.message, dialog);
+            } else {
+                chartContainer.html('<div class="alert alert-danger">Error loading project data</div>');
+            }
+        },
+        error: function (err) {
+            console.error("Error loading project data:", err);
+            chartContainer.html('<div class="alert alert-danger">Error loading project data</div>');
+        }
+    });
+}
+
+function renderChartData(data, dialog) {
+    const chartContainer = dialog.fields_dict.chart_container.$wrapper;
+
+    // Use template literals for better performance
+    const html = `
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h6>Hour Consumption Progress</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="progress mb-3" style="height: 30px;">
+                            <div class="progress-bar ${getProgressBarClass(data.consumption_percentage)}" 
+                                 style="width: ${Math.min(data.consumption_percentage, 100)}%">
+                                ${data.total_consumed_hours} / ${data.total_purchased_hours} hours
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h6>Billing Summary</h6>
-                                </div>
-                                <div class="card-body">
-                                    <table class="table table-sm">
-                                        <tr>
-                                            <td>Hourly Rate:</td>
-                                            <td><strong>${format_currency(data.hourly_rate)}</strong></td>
-                                        </tr>
-                                        <tr>
-                                            <td>Total Billable Amount:</td>
-                                            <td><strong>${format_currency(data.total_billable_amount)}</strong></td>
-                                        </tr>
-                                        <tr>
-                                            <td>Consumption %:</td>
-                                            <td><strong>${data.consumption_percentage.toFixed(1)}%</strong></td>
-                                        </tr>
-                                    </table>
-                                </div>
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <h4 class="text-primary">${data.total_purchased_hours || 0}</h4>
+                                <small class="text-muted">Purchased</small>
+                            </div>
+                            <div class="col-4">
+                                <h4 class="text-success">${data.total_consumed_hours || 0}</h4>
+                                <small class="text-muted">Consumed</small>
+                            </div>
+                            <div class="col-4">
+                                <h4 class="text-info">${data.remaining_hours || 0}</h4>
+                                <small class="text-muted">Remaining</small>
                             </div>
                         </div>
                     </div>
-                `);
-            }
-        }
-    });
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h6>Billing Summary</h6>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm">
+                            <tr>
+                                <td>Hourly Rate:</td>
+                                <td><strong>${format_currency(data.hourly_rate || 0)}</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Total Billable Amount:</td>
+                                <td><strong>${format_currency(data.total_billable_amount || 0)}</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Consumption %:</td>
+                                <td><strong>${(data.consumption_percentage || 0).toFixed(1)}%</strong></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    chartContainer.html(html);
 }
 
 function show_billing_summary(project) {

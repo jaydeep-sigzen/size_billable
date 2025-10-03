@@ -118,7 +118,7 @@ def get_data(filters):
     if not managed_projects:
         return []
     
-    # Build query
+    # Optimized query with all calculations in SQL to avoid N+1 problem
     query = """
         SELECT 
             p.name,
@@ -130,9 +130,27 @@ def get_data(filters):
             p.total_consumed_hours,
             p.hourly_rate,
             p.status,
-            u.full_name as project_manager
+            u.full_name as project_manager,
+            (p.total_purchased_hours - p.total_consumed_hours) as remaining_hours,
+            CASE 
+                WHEN p.total_purchased_hours > 0 
+                THEN (p.total_consumed_hours / p.total_purchased_hours) * 100 
+                ELSE 0 
+            END as consumption_percentage,
+            (p.total_consumed_hours * p.hourly_rate) as total_billable_amount,
+            COALESCE(pending_counts.pending_approvals, 0) as pending_approvals
         FROM `tabProject` p
         LEFT JOIN `tabUser` u ON p.project_manager_user = u.name
+        LEFT JOIN (
+            SELECT 
+                tsd.project,
+                COUNT(*) as pending_approvals
+            FROM `tabTimesheet Detail` tsd
+            INNER JOIN `tabTimesheet` ts ON tsd.parent = ts.name
+            WHERE ts.status = 'Submitted'
+            AND tsd.approval_status = 'Pending'
+            GROUP BY tsd.project
+        ) pending_counts ON p.name = pending_counts.project
         WHERE p.name IN %(projects)s
     """
     
@@ -154,29 +172,6 @@ def get_data(filters):
     query += " ORDER BY p.project_name"
     
     data = frappe.db.sql(query, query_params, as_dict=True)
-    
-    # Calculate additional fields
-    for row in data:
-        row["remaining_hours"] = (row["total_purchased_hours"] or 0) - (row["total_consumed_hours"] or 0)
-        
-        if row["total_purchased_hours"] > 0:
-            row["consumption_percentage"] = (row["total_consumed_hours"] / row["total_purchased_hours"]) * 100
-        else:
-            row["consumption_percentage"] = 0
-        
-        row["total_billable_amount"] = (row["total_consumed_hours"] or 0) * (row["hourly_rate"] or 0)
-        
-        # Get pending approvals count
-        pending_count = frappe.db.sql("""
-            SELECT COUNT(*)
-            FROM `tabTimesheet Detail` tsd
-            INNER JOIN `tabTimesheet` ts ON tsd.parent = ts.name
-            WHERE tsd.project = %s
-            AND ts.status = 'Submitted'
-            AND tsd.approval_status = 'Pending'
-        """, row["name"])[0][0]
-        
-        row["pending_approvals"] = pending_count
     
     return data
 

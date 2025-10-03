@@ -78,49 +78,47 @@ def unlock_timesheet_entries(doc, method):
 
 def update_project_consumed_hours(project_name):
     """Update total consumed hours for a project"""
-    project = frappe.get_doc("Project", project_name)
+    # Check billing type first to avoid unnecessary queries
+    billing_type = frappe.get_value("Project", project_name, "billing_type")
     
-    if project.billing_type == "Hourly Billing":
+    if billing_type == "Hourly Billing":
         total_consumed = frappe.db.sql("""
-            SELECT SUM(tsd.billable_hours)
+            SELECT COALESCE(SUM(tsd.billable_hours), 0)
             FROM `tabTimesheet Detail` tsd
             INNER JOIN `tabTimesheet` ts ON tsd.parent = ts.name
             WHERE tsd.project = %s
             AND tsd.approved_by IS NOT NULL
             AND ts.status = 'Submitted'
-        """, project_name)[0][0] or 0
+        """, project_name, as_list=True)[0][0]
         
-        project.total_consumed_hours = flt(total_consumed, 2)
-        project.save()
+        # Use direct SQL update for better performance
+        frappe.db.set_value("Project", project_name, "total_consumed_hours", flt(total_consumed, 2))
+        frappe.db.commit()
 
 @frappe.whitelist()
 def get_timesheet_approval_status(timesheet_name):
     """Get approval status for all entries in a timesheet"""
-    timesheet = frappe.get_doc("Timesheet", timesheet_name)
+    # Use optimized query instead of loading full document
+    entries = frappe.db.sql("""
+        SELECT 
+            name, project, task, activity_type, hours, 
+            billable_hours, non_billable_hours, approval_status, 
+            approved_by, approved_on
+        FROM `tabTimesheet Detail`
+        WHERE parent = %s
+        ORDER BY idx
+    """, timesheet_name, as_dict=True)
     
     approval_summary = {
-        "total_entries": len(timesheet.time_logs),
+        "total_entries": len(entries),
         "pending_entries": 0,
         "approved_entries": 0,
         "rejected_entries": 0,
         "entries": []
     }
     
-    for row in timesheet.time_logs:
-        status = {
-            "name": row.name,
-            "project": row.project,
-            "task": row.task,
-            "activity_type": row.activity_type,
-            "hours": row.hours,
-            "billable_hours": row.billable_hours,
-            "non_billable_hours": row.non_billable_hours,
-            "approval_status": row.approval_status,
-            "approved_by": row.approved_by,
-            "approved_on": row.approved_on
-        }
-        
-        approval_summary["entries"].append(status)
+    for row in entries:
+        approval_summary["entries"].append(row)
         
         if row.approval_status == "Pending":
             approval_summary["pending_entries"] += 1

@@ -86,14 +86,14 @@ def get_project_summary(project_name):
     # Get approved billable hours (only approved entries are visible to customers)
     # September 2025 view: Shows only data approved through August 2025
     approved_billable_hours = frappe.db.sql("""
-        SELECT SUM(tsd.billable_hours)
+        SELECT COALESCE(SUM(tsd.billable_hours), 0)
         FROM `tabTimesheet Detail` tsd
         INNER JOIN `tabTimesheet` ts ON tsd.parent = ts.name
         WHERE tsd.project = %s
         AND tsd.approved_by IS NOT NULL
         AND ts.status = 'Submitted'
         AND tsd.approved_on <= '2025-08-31 23:59:59'
-    """, project_name)[0][0] or 0
+    """, project_name, as_list=True)[0][0]
     
     return {
         "project_name": project.project_name,
@@ -262,23 +262,29 @@ def get_customer_dashboard_data():
     now = datetime.now()
     current_month_data = get_billing_data(month=now.month, year=now.year)
     
-    # Calculate totals across all projects
-    total_purchased = sum(p.get("total_purchased_hours", 0) for p in projects)
-    total_consumed = sum(p.get("total_consumed_hours", 0) for p in projects)
-    total_approved = 0
-    
-    for project in projects:
-        summary = get_project_summary(project.name)
-        total_approved += summary.get("approved_billable_hours", 0)
+    # Calculate totals across all projects - optimized single query
+    customer_name = frappe.get_value("User", user, "customer")
+    totals = frappe.db.sql("""
+        SELECT 
+            COALESCE(SUM(p.total_purchased_hours), 0) as total_purchased,
+            COALESCE(SUM(p.total_consumed_hours), 0) as total_consumed,
+            COALESCE(SUM(tsd.billable_hours), 0) as total_approved
+        FROM `tabProject` p
+        LEFT JOIN `tabTimesheet Detail` tsd ON tsd.project = p.name
+        LEFT JOIN `tabTimesheet` ts ON tsd.parent = ts.name
+        WHERE p.customer = %s
+        AND p.status != 'Cancelled'
+        AND (tsd.approved_by IS NULL OR (tsd.approved_by IS NOT NULL AND ts.status = 'Submitted' AND tsd.approved_on <= '2025-08-31 23:59:59'))
+    """, customer_name, as_dict=True)[0]
     
     return {
         "projects": projects,
         "current_month_data": current_month_data,
         "totals": {
-            "total_purchased_hours": total_purchased,
-            "total_consumed_hours": total_consumed,
-            "total_approved_hours": total_approved,
-            "remaining_hours": total_purchased - total_consumed
+            "total_purchased_hours": totals.total_purchased,
+            "total_consumed_hours": totals.total_consumed,
+            "total_approved_hours": totals.total_approved,
+            "remaining_hours": totals.total_purchased - totals.total_consumed
         }
     }
 
